@@ -3,11 +3,13 @@
 # Builds and prints Mastermind board
 # Processes turns and gives feeback
 class BoardUI
-  def initialize(number_of_guesses = 12)
-    @board = Array.new(number_of_guesses) { Array.new(4, '*'.colorize(:black)) }
+  COLORED_PEGS = { red: 'R', green: 'G', yellow: 'Y', blue: 'B', magenta: 'M', cyan: 'C' }.freeze
+  def initialize(number_of_guesses)
+    blank_symbol = 'o'
+    @board = Array.new(number_of_guesses) { Array.new(4, blank_symbol.colorize(:black)) }
   end
 
-  def print_current_board
+  def print_current
     @board.each_with_index do |row, row_index|
       puts divider
       print '| '
@@ -17,8 +19,8 @@ class BoardUI
     end
   end
 
-  def update_board
-    @board[3][1] = 'B'.colorize(:blue)
+  def update(index)
+    @board[index] = @user_guess
   end
 
   private

@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
+require_relative 'lib/mastermind'
 require_relative 'lib/board_ui'
+require_relative 'lib/player'
 
 require 'colorize'
 
@@ -10,17 +12,4 @@ require 'colorize'
 # 4. CodeGuesser makes second guess
 # 5. CodeMaker gives feedback
 # 6. etc…
-board = BoardUI.new
-board.print_current_board
-# puts 'Break the Code: * * * *'
-# puts '---–---––--- | Color Options: R(Red), O(Orange), Y,(Yellow)'
-# print 'B Y R G'
-# print "\t • •".colorize(:black)
-# puts '       '
-# puts "\t • •"
-# puts '------–-––--'
-# print 'B Y R G'
-# print "\t • •".colorize(:black)
-# puts '       '
-# puts "\t • •"
-# puts '------–-––--'
+Mastermind.play
