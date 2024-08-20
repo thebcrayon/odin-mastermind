@@ -19,8 +19,12 @@ class BoardUI
     end
   end
 
-  def update(index)
-    @board[index] = @user_guess
+  def update(user_guess, index)
+    @board[index] = user_guess.split('')
+  end
+
+  def valid_letters
+    COLORED_PEGS.values
   end
 
   private
