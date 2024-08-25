@@ -7,5 +7,7 @@ class Player
 
   def initialize(name)
     @name = name
+    @player_type = nil
+    @code = nil
   end
 end

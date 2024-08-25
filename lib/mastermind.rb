@@ -1,22 +1,15 @@
 # frozen_string_literal: true
 
+require_relative 'messages'
 # Main game class to process and
 # output guesses, set up players
 # and control main game flow.
 class Mastermind
   DEFAULT_GUESSES = 12
-  MSG_GAME_PROMPTS =
-    {
-      prompt_player_name: 'Enter Player Name',
-      prompt_guesses: 'Enter Number of guesses. Hit any key for default of 12',
-      prompt_welcome: "Welcome, guess the code in #{@number_of_guesses} ",
-      prompt_make_guess: 'Enter your next guess',
-      prompt_input_error: 'Error with input, try again',
-      prompt_next_round: 'Ready for the next round? Press ENTER to continue',
-      prompt_game_over: 'Game Over!',
-      prompt_human_win: 'Congrats, you guessed correctly',
-      prompt_loss: 'Sorry, it was not guessed correctly'
-    }.freeze
+
+  GAME_DATA_PROMPTS =
+    { prompt_player_name: 'Enter Player Name',
+      prompt_guesses: 'Enter Number of guesses. Hit any key for default of 12' }.freeze
 
   def self.play
     player_input = game_data
@@ -28,14 +21,14 @@ class Mastermind
   end
 
   def self.game_data
-    prompts = MSG_GAME_PROMPTS.values_at(:prompt_player_name, :prompt_guesses)
+    prompts = GAME_DATA_PROMPTS.values_at(:prompt_player_name, :prompt_guesses)
     prompts.reduce([]) do |acc, prompt|
       puts prompt
       acc << gets.chomp
     end
   end
 
-  private_class_method :game_data # :msg_game_prompts
+  private_class_method :game_data # , :msg_game_prompts
 
   private
 
@@ -43,45 +36,53 @@ class Mastermind
     @player_human = player
     @player_computer = Player.new('Computer')
     @board_ui = board_ui
+    @user_code = nil
     @number_of_guesses = number_of_guesses
-    @master_code = %w[Y M C R]
-    @user_guess = nil
-    @current_guess_number = nil
+    @current_round = nil
+    @board_ui.master_code = @board_ui.generate_code
+    @master_code = @board_ui.master_code
     start
   end
 
   def start
     1.upto(total_guesses) do |i|
-      @current_guess_number = i - 1
-      clear_screen if i == 1
-      prompt_user_guess
-      @board_ui.print_current
-      process_user_guess(gets.chomp)
+      @current_round = i - 1
       clear_screen
+      @board_ui.print_current
+      if win?
+        msg_game_win
+        break
+      end
+      msg_next_entry
     end
+  end
+
+  def process_guess(guess)
+    @user_code = guess.upcase.split('')
+    unless valid_entry?
+      msg_input_error
+      process_guess(gets.chomp)
+    end
+    @board_ui.update(@user_code, @current_round)
+    clear_screen
+    @board_ui.print_current
+    check_win
+  end
+
+  def check_win
+    if win?
+      msg_game_win
+    elsif @current_round + 1 == total_guesses && !win?
+      msg_game_loss
+    end
+  end
+
+  def win?
+    @master_code == @user_code
   end
 
   def total_guesses
     @number_of_guesses
-  end
-
-  def process_user_guess(user_guess)
-    @user_guess = user_guess.upcase
-    if valid_entry? && number_of_exact_matches == 4
-      game_over
-    elsif valid_entry? && number_of_exact_matches < 4
-      @board_ui.update(@user_guess, @current_guess_number)
-    else
-      prompt_input_error
-      process_user_guess(gets.chomp)
-    end
-  end
-
-  def number_of_exact_matches
-    @user_guess.split('').each_with_index.reduce(0) do |acc, (item, index)|
-      acc += 1 unless item != @master_code[index]
-      acc
-    end
   end
 
   def valid_entry?
@@ -92,23 +93,28 @@ class Mastermind
   end
 
   def four_digits?
-    @user_guess.size == 4
+    @user_code.size == 4
   end
 
   def uses_correct_letters?
-    @user_guess.split('').all? { |letter| @board_ui.valid_letters.include?(letter) }
+    @user_code.all? { |letter| @board_ui.valid_letters.include?(letter) }
   end
 
-  def game_over
-    puts MSG_GAME_PROMPTS.values_at(:prompt_game_over)
+  def msg_next_entry
+    puts "\nEnter your code attempt:\n"
+    process_guess(gets.chomp)
   end
 
-  def prompt_input_error
-    puts MSG_GAME_PROMPTS.values_at(:prompt_input_error)
+  def msg_input_error
+    puts 'Error with input, please enter valid letters'
   end
 
-  def prompt_user_guess
-    puts MSG_GAME_PROMPTS.values_at(:prompt_user_guess)
+  def msg_game_win
+    puts 'Game over, You won!'
+  end
+
+  def msg_game_loss
+    puts "Game over, you lost. The code was #{@master_code.join}"
   end
 
   def clear_screen
