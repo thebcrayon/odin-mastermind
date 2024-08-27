@@ -3,18 +3,17 @@
 # Builds and prints Mastermind board
 # Processes turns and gives feeback
 class BoardUI
-  COLORED_PEGS = { red: 'R', green: 'G', yellow: 'Y', blue: 'B', magenta: 'M', cyan: 'C' }.freeze
-
   attr_accessor :master_code
 
-  def initialize(number_of_guesses)
-    @blank_symbol = 'o'
+  def initialize(number_of_guesses, pegs_hash)
+    @blank_symbol = 'o'.colorize(:black)
     @hint_symbol_blank = '• '.colorize(:black)
     @hint_symbol_correct = '* '
-    @board = Array.new(number_of_guesses) { Array.new(4, @blank_symbol.colorize(:black)) }
-    @hints = Array.new(number_of_guesses) { Array.new(4, @hint_symbol_blank.colorize(:black)) }
+    @board = Array.new(number_of_guesses) { Array.new(4, @blank_symbol) }
+    @hints = Array.new(number_of_guesses) { Array.new(4, @hint_symbol_blank) }
     @master_code = []
     @user_code = nil
+    @pegs = pegs_hash
   end
 
   def print_current
@@ -34,23 +33,12 @@ class BoardUI
     @hints[index] = hint_array
   end
 
-  def valid_letters
-    COLORED_PEGS.values
-  end
-
-  def generate_code
-    letters = COLORED_PEGS.to_a.flatten.select { |item| item.to_s.length == 1 }
-    random_array = []
-    4.times { random_array.push(letters[rand(0..letters.size - 1)]) }
-    random_array
-  end
-
   private
 
   def show_instructions
     puts 'INSTRUCTIONS:'.yellow.underline
     puts "\nTry to guess the secret code using the following keys:\n"
-    COLORED_PEGS.each do |key, value|
+    @pegs.each do |key, value|
       print "#{value.colorize(key).underline} = #{key.capitalize}"
       print ' | ' unless value == 'C'
       puts "\n" if value == 'C'
@@ -67,7 +55,7 @@ class BoardUI
 
   def colored_letters_array
     @user_code.reduce([]) do |arr, letter|
-      arr << letter.colorize(COLORED_PEGS.key(letter))
+      arr << letter.colorize(@pegs.key(letter))
     end
   end
 

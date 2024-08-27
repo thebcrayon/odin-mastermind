@@ -2,15 +2,20 @@
 
 # Message that direct gameflow
 module Messages
-  def msg_game_prompts
-    { prompt_player_name: 'Enter Player Name',
-      prompt_guesses: 'Enter Number of guesses. Hit any key for default of 12',
-      prompt_welcome: 'Welcome, ',
-      prompt_make_guess: 'Enter your next guess',
-      prompt_input_error: 'Error with input, try again',
-      prompt_next_round: 'Ready for the next round? Press ENTER to continue',
-      prompt_game_over: 'Game Over!',
-      prompt_human_win: 'Congrats, you guessed correctly',
-      prompt_loss: 'Sorry, it was not guessed correctly' }
+  def msg_next_entry
+    puts "\nEnter your code attempt:\n"
+    process_guess(gets.chomp)
+  end
+
+  def msg_input_error
+    puts 'Error with input, please enter valid letters'
+  end
+
+  def msg_game_win
+    puts 'Game over, You won!'
+  end
+
+  def msg_game_loss(code)
+    puts "Game over, you lost. The code was #{code.join}"
   end
 end

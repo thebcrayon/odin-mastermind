@@ -5,8 +5,9 @@ require_relative 'messages'
 # output guesses, set up players
 # and control main game flow.
 class Mastermind
-  DEFAULT_GUESSES = 12
+  include Messages
 
+  COLORED_PEGS = { red: 'R', green: 'G', yellow: 'Y', blue: 'B', magenta: 'M', cyan: 'C' }.freeze
   GAME_DATA_PROMPTS =
     { prompt_player_name: 'Enter Player Name',
       prompt_guesses: 'Enter Number of guesses. Hit any key for default of 12' }.freeze
@@ -15,9 +16,9 @@ class Mastermind
     player_input = game_data
     player_name = player_input[0]
     user_round_input = player_input[1].to_i
-    number_of_guesses = user_round_input.positive? ? user_round_input : DEFAULT_GUESSES
-    board_ui = BoardUI.new(number_of_guesses)
-    Mastermind.new(Player.new(player_name), board_ui, number_of_guesses)
+    total_rounds = user_round_input.positive? ? user_round_input : 12 # default 12 was constant, saving space
+    players = [Player.new(player_name, true), Player.new('Computer', false)] # true/false should prob be a method
+    Mastermind.new(players, total_rounds)
   end
 
   def self.game_data
@@ -28,24 +29,40 @@ class Mastermind
     end
   end
 
-  private_class_method :game_data # , :msg_game_prompts
+  def setup_players(players)
+    @code_breaker = players[0]
+    @code_setter = players[1]
+  end
+
+  def setup_rounds(total_rounds)
+    @total_rounds = total_rounds
+    @current_round = nil
+  end
+
+  def setup_codes
+    @master_code = @code_setter.generate_code(COLORED_PEGS)
+    @user_code = nil
+  end
+
+  def setup_board
+    @board_ui = BoardUI.new(@total_rounds, COLORED_PEGS)
+    @board_ui.master_code = @master_code
+  end
+
+  private_class_method :game_data
 
   private
 
-  def initialize(player, board_ui, number_of_guesses)
-    @player_human = player
-    @player_computer = Player.new('Computer')
-    @board_ui = board_ui
-    @user_code = nil
-    @number_of_guesses = number_of_guesses
-    @current_round = nil
-    @board_ui.master_code = @board_ui.generate_code
-    @master_code = @board_ui.master_code
+  def initialize(players, total_rounds)
+    setup_players(players)
+    setup_rounds(total_rounds)
+    setup_codes
+    setup_board
     start
   end
 
   def start
-    1.upto(total_guesses) do |i|
+    1.upto(@total_rounds) do |i|
       @current_round = i - 1
       clear_screen
       @board_ui.print_current
@@ -72,17 +89,13 @@ class Mastermind
   def check_win
     if win?
       msg_game_win
-    elsif @current_round + 1 == total_guesses && !win?
-      msg_game_loss
+    elsif @current_round + 1 == @total_rounds && !win?
+      msg_game_loss(@master_code)
     end
   end
 
   def win?
     @master_code == @user_code
-  end
-
-  def total_guesses
-    @number_of_guesses
   end
 
   def valid_entry?
@@ -97,24 +110,7 @@ class Mastermind
   end
 
   def uses_correct_letters?
-    @user_code.all? { |letter| @board_ui.valid_letters.include?(letter) }
-  end
-
-  def msg_next_entry
-    puts "\nEnter your code attempt:\n"
-    process_guess(gets.chomp)
-  end
-
-  def msg_input_error
-    puts 'Error with input, please enter valid letters'
-  end
-
-  def msg_game_win
-    puts 'Game over, You won!'
-  end
-
-  def msg_game_loss
-    puts "Game over, you lost. The code was #{@master_code.join}"
+    @user_code.all? { |letter| COLORED_PEGS.values.include?(letter) }
   end
 
   def clear_screen
