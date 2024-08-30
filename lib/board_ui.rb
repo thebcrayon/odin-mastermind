@@ -16,8 +16,8 @@ class BoardUI
     @pegs = pegs_hash
   end
 
-  def print_current
-    show_instructions
+  def print_current(game_mode)
+    show_instructions(game_mode)
     @board.each_with_index do |row, row_index|
       puts '+–––––––––+'
       print '| '
@@ -28,6 +28,7 @@ class BoardUI
   end
 
   def update(user_code, index)
+    @game_mode = game_mode
     @user_code = user_code
     @board[index] = colored_letters_array
     @hints[index] = hint_array
@@ -35,7 +36,8 @@ class BoardUI
 
   private
 
-  def show_instructions
+  def show_instructions(game_mode)
+    puts game_mode
     puts 'INSTRUCTIONS:'.yellow.underline
     puts "\nTry to guess the secret code using the following keys:\n"
     @pegs.each do |key, value|
