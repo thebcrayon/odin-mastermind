@@ -16,8 +16,7 @@ class BoardUI
     @pegs = pegs_hash
   end
 
-  def print_current(game_mode)
-    show_instructions(game_mode)
+  def print_current
     @board.each_with_index do |row, row_index|
       puts '+–––––––––+'
       print '| '
@@ -28,32 +27,12 @@ class BoardUI
   end
 
   def update(user_code, index)
-    @game_mode = game_mode
     @user_code = user_code
     @board[index] = colored_letters_array
     @hints[index] = hint_array
   end
 
   private
-
-  def show_instructions(game_mode)
-    puts game_mode
-    puts 'INSTRUCTIONS:'.yellow.underline
-    puts "\nTry to guess the secret code using the following keys:\n"
-    @pegs.each do |key, value|
-      print "#{value.colorize(key).underline} = #{key.capitalize}"
-      print ' | ' unless value == 'C'
-      puts "\n" if value == 'C'
-    end
-    hints_text
-  end
-
-  def hints_text
-    puts "\nHINTS:\n".yellow.underline
-    puts "#{'*'.red} asterisk: A correct color in the correct position."
-    puts "#{'*'.white} asterisk: A correct color in the wrong position."
-    puts "NOTE: Hint order does not matter.\n".underline
-  end
 
   def colored_letters_array
     @user_code.reduce([]) do |arr, letter|
